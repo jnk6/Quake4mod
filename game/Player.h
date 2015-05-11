@@ -195,6 +195,8 @@ const int	ASYNC_PLAYER_TOURNEY_STATUS_BITS = idMath::BitsForInteger( PTS_NUM_STA
 class idInventory {
 public:
 	int						maxHealth;
+	int						maxMana;
+	int						curMana;
 	int						weapons;
 // RITUAL BEGIN
 // squirrel: Mode-agnostic buymenus
@@ -329,6 +331,7 @@ public:
 		bool		noFallingDamage :1;
 	} pfl;
 		
+
 	// inventory
 	idInventory				inventory;
 
@@ -352,6 +355,7 @@ public:
 	int						deathClearContentsTime;
  	bool					doingDeathSkin;
 	int						nextHealthPulse;	// time when health will tick down
+	int						nextManaPulse;		// time when mana will tick down
 	int						nextAmmoRegenPulse[ MAX_AMMO ];	// time when ammo will regenerate
 	int						nextArmorPulse;		// time when armor will tick down
 	bool					hiddenWeapon;		// if the weapon is hidden ( in noWeapons maps )

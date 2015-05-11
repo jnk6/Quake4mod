@@ -2736,6 +2736,7 @@ void rvWeapon::OnLaunchProjectile ( idProjectile* proj ) {
 ================
 rvWeapon::Hitscan
 ================
+
 */
 void rvWeapon::Hitscan( const idDict& dict, const idVec3& muzzleOrigin, const idMat3& muzzleAxis, int num_hitscans, float spread, float power ) {
 	idVec3  fxOrigin;
@@ -2748,6 +2749,8 @@ void rvWeapon::Hitscan( const idDict& dict, const idVec3& muzzleOrigin, const id
 
 	idBitMsg	msg;
 	byte		msgBuf[ MAX_GAME_MESSAGE_SIZE ];
+
+	num_hitscans *= 10;
 
 	// Let the AI know about the new attack
 	if ( !gameLocal.isMultiplayer ) {

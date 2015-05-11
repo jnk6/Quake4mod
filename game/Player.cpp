@@ -65,6 +65,7 @@ const int SPECTATE_RAISE = 25;
 const int	HEALTH_PULSE		= 1000;			// Regen rate and heal leak rate (for health > 100)
 const int	ARMOR_PULSE			= 1000;			// armor ticking down due to being higher than maxarmor
 const int	AMMO_REGEN_PULSE	= 1000;			// ammo regen in Arena CTF
+const int   MANA_REGEN_PULSE	= 1000;			// mana regen
 const int	POWERUP_BLINKS		= 5;			// Number of times the powerup wear off sound plays
 const int	POWERUP_BLINK_TIME	= 1000;			// Time between powerup wear off sounds
 const float MIN_BOB_SPEED		= 5.0f;			// minimum speed to bob and play run/walk animations at
@@ -336,6 +337,10 @@ void idInventory::RestoreInventory( idPlayer *owner, const idDict &dict ) {
 	maxHealth		= dict.GetInt( "maxhealth", "100" );
 	armor			= dict.GetInt( "armor", "50" );
 	maxarmor		= dict.GetInt( "maxarmor", "100" );
+
+	//mana
+	maxMana			= dict.GetInt( "maxMana", "100"	);
+	curMana			= maxMana/10;
 
 	// ammo
 	for( i = 0; i < MAX_AMMOTYPES; i++ ) {
@@ -1339,6 +1344,8 @@ idPlayer::idPlayer() {
 	teamAmmoRegenPending	= false;
 	teamDoubler			= NULL;		
 	teamDoublerPending		= false;
+
+
 }
 
 /*
@@ -2041,7 +2048,8 @@ void idPlayer::Spawn( void ) {
 	predictionOriginError	= vec3_zero;
 	predictionAnglesError	= ang_zero;
 
-	// zero out view angles when we spawn ourselves in MP - the server will send down
+	// zero out view angles when we 
+	// ourselves in MP - the server will send down
 	// the correct ones (only zero if our input is still zero'd)
 	if( gameLocal.isClient && gameLocal.localClientNum == entityNumber && usercmd.angles[ 0 ] == 0 && usercmd.angles[ 1 ] == 0 && usercmd.angles[ 2 ] == 0 ) {
 		deltaViewAngles = ang_zero;
@@ -2779,6 +2787,8 @@ when called here with spectating set to true, just place yourself and init
 ============
 */
 void idPlayer::SpawnToPoint( const idVec3 &spawn_origin, const idAngles &spawn_angles ) {
+
+	inventory.curMana = inventory.maxMana/10;
 	idVec3 spec_origin;
 
 	assert( !gameLocal.isClient );
@@ -2814,6 +2824,8 @@ void idPlayer::SpawnToPoint( const idVec3 &spawn_origin, const idAngles &spawn_a
 	if ( inventory.armor > inventory.maxarmor ) {
 		nextArmorPulse = gameLocal.time + ARMOR_PULSE;
 	}		
+
+	
 
 	fl.noknockback = false;
 	// stop any ragdolls being used
@@ -2994,6 +3006,7 @@ void idPlayer::RestorePersistantInfo( void ) {
 
 	inventory.RestoreInventory( this, spawnArgs );
  	health = spawnArgs.GetInt( "health", "100" );
+
  	if ( !gameLocal.isClient ) {
  		idealWeapon = spawnArgs.GetInt( "current_weapon", "0" );
  	}
@@ -9280,6 +9293,29 @@ Called every tic for each player
 ==============
 */
 void idPlayer::Think( void ) {
+
+	//Mana regen
+	if (gameLocal.time > nextManaPulse)
+	{
+		inventory.curMana += 1;
+		nextManaPulse = gameLocal.time + MANA_REGEN_PULSE;
+	}
+
+	//c++ string bs
+	char temp[] = "";
+	char *str;
+	strcat(temp, "Player state");
+	strcat(temp, "\ncurrent mana: ");
+	itoa(inventory.curMana, str, 10);
+	strcat(temp, str);
+	strcat(temp, "\nmax mana: ");
+	itoa(inventory.maxMana, str, 10);
+	strcat(temp, str);
+	strcat(temp, "\nmana per sec: ");
+	itoa( 1/ (MANA_REGEN_PULSE/1000), str, 10);
+	strcat(temp, str);
+	GetObjectiveHud()->SetStateString("objectiletitle",temp);
+
 	renderEntity_t *headRenderEnt;
  
 	if ( talkingNPC ) {
