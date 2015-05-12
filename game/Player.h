@@ -196,6 +196,7 @@ class idInventory {
 public:
 	int						maxHealth;
 	int						maxMana;
+	int						manaRegen;
 	int						curMana;
 	int						weapons;
 // RITUAL BEGIN

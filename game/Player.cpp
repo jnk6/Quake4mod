@@ -65,7 +65,7 @@ const int SPECTATE_RAISE = 25;
 const int	HEALTH_PULSE		= 1000;			// Regen rate and heal leak rate (for health > 100)
 const int	ARMOR_PULSE			= 1000;			// armor ticking down due to being higher than maxarmor
 const int	AMMO_REGEN_PULSE	= 1000;			// ammo regen in Arena CTF
-const int   MANA_REGEN_PULSE	= 1000;			// mana regen
+const int   MANA_REGEN_PULSE	= 1000;			// mana regen pulse
 const int	POWERUP_BLINKS		= 5;			// Number of times the powerup wear off sound plays
 const int	POWERUP_BLINK_TIME	= 1000;			// Time between powerup wear off sounds
 const float MIN_BOB_SPEED		= 5.0f;			// minimum speed to bob and play run/walk animations at
@@ -270,6 +270,9 @@ void idInventory::GetPersistantData( idDict &dict ) {
 	const idKeyValue *kv;
 	const char *name;
 
+	dict.SetInt( "maxMana" , maxMana);
+	dict.SetInt( "curMana" , curMana);
+	dict.SetInt( "manaRegen", manaRegen);
 	// armor
 	dict.SetInt( "armor", armor );
 
@@ -339,8 +342,9 @@ void idInventory::RestoreInventory( idPlayer *owner, const idDict &dict ) {
 	maxarmor		= dict.GetInt( "maxarmor", "100" );
 
 	//mana
-	maxMana			= dict.GetInt( "maxMana", "100"	);
+	maxMana			= dict.GetInt( "maxMana", "100");
 	curMana			= maxMana/10;
+	manaRegen		= dict.GetInt( "manaRegen", "1");
 
 	// ammo
 	for( i = 0; i < MAX_AMMOTYPES; i++ ) {
@@ -406,6 +410,9 @@ void idInventory::Save( idSaveGame *savefile ) const {
 	savefile->WriteInt( powerups );
 	savefile->WriteInt( armor );
 	savefile->WriteInt( maxarmor );
+	savefile->WriteInt( maxMana);
+	savefile->WriteInt( manaRegen);
+	savefile->WriteInt( curMana);
 
 	for( i = 0; i < MAX_AMMO; i++ ) {
 		savefile->WriteInt( ammo[ i ] );
@@ -486,6 +493,9 @@ void idInventory::Restore( idRestoreGame *savefile ) {
 	savefile->ReadInt( powerups );
 	savefile->ReadInt( armor );
 	savefile->ReadInt( maxarmor );
+	savefile->ReadInt( maxMana );
+	savefile->ReadInt( manaRegen );
+	savefile->ReadInt( curMana);
 
 	for( i = 0; i < MAX_AMMO; i++ ) {
 		savefile->ReadInt( ammo[ i ] );
@@ -1123,6 +1133,7 @@ idPlayer::idPlayer() {
 	lastDmgTime				= 0;
 	deathClearContentsTime	= 0;
 	nextHealthPulse			= 0;
+	nextManaPulse			= 0; //zero initialize next mana pulse
 
 	scoreBoardOpen			= false;
 	forceScoreBoard			= false;
@@ -2134,6 +2145,7 @@ void idPlayer::Save( idSaveGame *savefile ) const {
 	savefile->WriteInt( deathClearContentsTime );
  	savefile->WriteBool( doingDeathSkin );
  	savefile->WriteInt( nextHealthPulse );
+	savefile->WriteInt( nextManaPulse);
  	savefile->WriteInt( nextArmorPulse );
  	savefile->WriteBool( hiddenWeapon );
 
@@ -2407,6 +2419,7 @@ void idPlayer::Restore( idRestoreGame *savefile ) {
 	savefile->ReadInt( deathClearContentsTime );
  	savefile->ReadBool( doingDeathSkin );
  	savefile->ReadInt( nextHealthPulse );
+	savefile->ReadInt( nextManaPulse );
  	savefile->ReadInt( nextArmorPulse );
  	savefile->ReadBool( hiddenWeapon );
 
@@ -2788,7 +2801,9 @@ when called here with spectating set to true, just place yourself and init
 */
 void idPlayer::SpawnToPoint( const idVec3 &spawn_origin, const idAngles &spawn_angles ) {
 
-	inventory.curMana = inventory.maxMana/10;
+	//Might not need because this done in restorePersistant
+	//inventory.curMana = inventory.maxMana/10;
+
 	idVec3 spec_origin;
 
 	assert( !gameLocal.isClient );
@@ -2825,7 +2840,9 @@ void idPlayer::SpawnToPoint( const idVec3 &spawn_origin, const idAngles &spawn_a
 		nextArmorPulse = gameLocal.time + ARMOR_PULSE;
 	}		
 
-	
+	if ( inventory.curMana < inventory.maxMana) {
+		nextManaPulse = gameLocal.time + MANA_REGEN_PULSE;
+	}
 
 	fl.noknockback = false;
 	// stop any ragdolls being used
@@ -8504,6 +8521,10 @@ void idPlayer::PerformImpulse( int impulse ) {
 			}
 			break;
 		}
+		case IMPULSE_16:
+			GetObjectiveHud()->SetStateString("objectivetitle","THIS WORKED, FO SHIZZLE");
+			CompleteObjective("GOT HERE");
+			break;
 		case IMPULSE_17: {
  			if ( gameLocal.isClient || entityNumber == gameLocal.localClientNum ) {
  				gameLocal.mpGame.ToggleReady( );
@@ -9292,29 +9313,63 @@ idPlayer::Think
 Called every tic for each player
 ==============
 */
+
+int counter =0;
 void idPlayer::Think( void ) {
 
-	//Mana regen
-	if (gameLocal.time > nextManaPulse)
-	{
-		inventory.curMana += 1;
-		nextManaPulse = gameLocal.time + MANA_REGEN_PULSE;
-	}
+	//Handles mana stuff
+	if (!gameLocal.InCinematic()){
+		//Mana regen
+		if (gameLocal.time > nextManaPulse && inventory.curMana < inventory.maxMana)
+		{
+			counter +=1;
+			inventory.curMana += inventory.manaRegen;
+			nextManaPulse = gameLocal.time + MANA_REGEN_PULSE;
+		}
 
-	//c++ string bs
-	char temp[] = "";
-	char *str;
-	strcat(temp, "Player state");
-	strcat(temp, "\ncurrent mana: ");
-	itoa(inventory.curMana, str, 10);
-	strcat(temp, str);
-	strcat(temp, "\nmax mana: ");
-	itoa(inventory.maxMana, str, 10);
-	strcat(temp, str);
-	strcat(temp, "\nmana per sec: ");
-	itoa( 1/ (MANA_REGEN_PULSE/1000), str, 10);
-	strcat(temp, str);
-	GetObjectiveHud()->SetStateString("objectiletitle",temp);
+		//c++ string bs
+		/*
+		char temp[] = "";
+		char str[90];
+		strcat_s(temp, "Player state");
+		strcat_s(temp, "\ncurrent mana: ");
+		_itoa(inventory.curMana, str, 10);
+		strcat_s(temp, str);
+		strcat_s(temp, "\nmax mana: ");
+		_itoa(inventory.maxMana, str, 10);
+		strcat_s(temp, str);
+		strcat_s(temp, "\nmana per sec: ");
+		_itoa( 1/ (MANA_REGEN_PULSE/1000), str, 10);
+		strcat_s(temp, str);
+		*/
+
+		const char *str =
+		(
+			idStr("mana: ") + 
+			idStr(inventory.curMana) +
+			idStr("/") +
+			idStr(inventory.maxMana) +
+			idStr( " +") +
+			idStr(inventory.manaRegen) +
+			idStr( " per sec\n") +
+			idStr( "counter : ") +
+			idStr( counter)
+	
+		).c_str();
+	
+		//display player state string
+		//updates every burstTime
+		int burstTime = 70;
+		if (gameLocal.time % burstTime == 0){
+			GetObjectiveHud()->SetStateString("objectivetitle", str);
+			CompleteObjective("Player stats");	
+		}
+
+		/*
+		GetObjectiveHud()->SetStateString("objectivetitle",temp);
+		CompleteObjective("Player State");
+		*/	
+	}
 
 	renderEntity_t *headRenderEnt;
  
