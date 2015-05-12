@@ -341,7 +341,9 @@ stateResult_t rvWeaponBlaster::State_Charge ( const stateParms_t& parms ) {
 			PlayCycle( ANIMCHANNEL_ALL, "charging", parms.blendFrames );
 			return SRESULT_STAGE ( CHARGE_WAIT );
 			
-		case CHARGE_WAIT:	
+		case CHARGE_WAIT:
+			// before I forget, what this means is that this will execute when the difference of time starting charge and the current
+			// game charge is less than the charge time
 			if ( gameLocal.time - fireHeldTime < chargeTime ) {
 				float f;
 				f = (float)(gameLocal.time - fireHeldTime) / (float)chargeTime;
