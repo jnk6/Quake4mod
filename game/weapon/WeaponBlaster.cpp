@@ -432,9 +432,9 @@ stateResult_t rvWeaponBlaster::State_Fire ( const stateParms_t& parms ) {
 
 	
 			if ( gameLocal.time - fireHeldTime > chargeTime ) {	
-				if (player->inventory.curMana > 5)
+				if (player->inventory.curMana > 10)
 				{
-					player->inventory.curMana -= 5;
+					player->inventory.curMana -= 10;
 					Attack ( true, 1, spread, 0, 1.0f );
 					PlayEffect ( "fx_chargedflash", barrelJointView, false );
 					PlayAnim( ANIMCHANNEL_ALL, "chargedfire", parms.blendFrames );					
@@ -445,7 +445,7 @@ stateResult_t rvWeaponBlaster::State_Fire ( const stateParms_t& parms ) {
 				Attack ( false, 4, spread*10, 0, 1.0f );
 
 				//temp solution
-				if (player->inventory.curMana < 100){
+				if (player->inventory.curMana < player->inventory.maxMana){
 					player->inventory.curMana += 1;
 				}
 

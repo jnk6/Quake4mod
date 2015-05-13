@@ -142,14 +142,28 @@ stateResult_t rvWeaponGrenadeLauncher::State_Fire ( const stateParms_t& parms ) 
 		STAGE_INIT,
 		STAGE_WAIT,
 	};	
+	idPlayer *player = gameLocal.GetLocalPlayer();
 	switch ( parms.stage ) {
-
+		
 		case STAGE_INIT:
 			nextAttackTime = gameLocal.time + (fireRate * owner->PowerUpModifier ( PMOD_FIRERATE ));
 			//was Attack ( false, 1, spread, 0, 1.0f );
-			Attack ( false, 3, 10, 0, 1.0f );
-			Attack ( false, 5, 20, 0, 1.0f );
-			Attack ( true, 10, 15, 0, 1.0f );
+			Attack ( false, 1, 10, 0, 1.0f );
+						
+			//spell portion
+
+			if (player->inventory.curMana > 10){
+				player->inventory.curMana -= 10;
+				Attack ( false, 6, 17, 0, 1.0f );
+			}
+			
+			if (player->inventory.curMana > 30)
+			{
+				player->inventory.curMana -= 30;
+				Attack ( true, 10, 15, 0, 1.0f ); //fire the rocket spell
+
+			}
+			
 
 			PlayAnim ( ANIMCHANNEL_ALL, GetFireAnim(), 0 );	
 			return SRESULT_STAGE ( STAGE_WAIT );
