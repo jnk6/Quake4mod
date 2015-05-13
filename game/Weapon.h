@@ -369,6 +369,12 @@ public:
 	int								lowAmmo;			// if ammo in clip hits this threshold, snd_
 	int								maxAmmo;		
 
+	// mana & spell management
+	bool							isASpell;			// if the weapon is a spell, AKA costs mana
+	int								manaCost;			// spells cost mana for every shot
+	int								manaGain;			// weapons gain mana for every 50 damage inflicted
+
+	
  	// multiplayer
  	int								clipPredictTime;
 

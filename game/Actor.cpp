@@ -514,6 +514,22 @@ idActor::Spawn
 =====================
 */
 void idActor::Spawn( void ) {
+	
+	
+	effect_t stunned = NONE_e;
+	effect_t slowed = NONE_e;
+	effect_t bleed = NONE_e;
+	/*
+	buffs = new buff_t[20];
+	effects = new effect_t[20];
+
+	//Clear buffs and effects
+	for (int i = 0; !buffs[i] && !effects[i]; ++i)
+	{
+		buffs[i] = NONE_b;
+		effects[i] = NONE_e;
+	}*/
+
 	idEntity		*ent;
 	idStr			jointName;
 	float			fovDegrees;
@@ -885,6 +901,20 @@ void idActor::Save( idSaveGame *savefile ) const {
 	savefile->WriteInt( deathPushTime );
 	savefile->WriteVec3( deathPushForce );
 	savefile->WriteJoint( deathPushJoint );
+
+	/*
+	savefile->WriteInt((int) stunned);
+	savefile->WriteInt((int) slowed);
+	savefile->WriteInt((int) bleed);
+
+	/*
+	//Save buffs and effects
+	for (int i =0; !buffs[i] && !effects[i]; ++i)
+	{
+		savefile->WriteInt((int)buffs[i]);
+		savefile->WriteInt((int)effects[i]);
+	}
+	*/
 }
 
 /*
@@ -1005,6 +1035,32 @@ void idActor::Restore( idRestoreGame *savefile ) {
 	savefile->ReadVec3( deathPushForce );
 	savefile->ReadJoint( deathPushJoint );
 
+	/*
+	int temp;
+	savefile->ReadInt( temp);
+	stunned = (effect_t) temp;
+	savefile->ReadInt(temp);
+	slowed = (effect_t) temp;
+	savefile->ReadInt(temp);
+	bleed = (effect_t) temp;
+	/*
+	//Restore bufs and effects
+	//Clear it first
+	
+	for (int i = 0; !buffs[i] && !effects[i]; ++i)
+	{
+		buffs[i] = NONE_b;
+		effects[i] = NONE_e;
+	}
+	//Load them
+	for (int i =0; !buffs[i] && !effects[i]; ++i)
+	{
+		int temp;
+		savefile->ReadInt(temp);
+		buffs[i] = (buff_t)temp;
+		savefile->ReadInt(temp);
+		effects[i] = (effect_t)temp;
+	} */
 // mekberg: update this
 	FlashlightUpdate( );
 // RAVEN END

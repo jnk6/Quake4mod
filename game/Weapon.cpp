@@ -37,6 +37,8 @@ END_CLASS
 rvViewWeapon::rvViewWeapon()
 ================
 */
+
+
 rvViewWeapon::rvViewWeapon() {
 	modelDefHandle		= -1;
 	weapon				= NULL;

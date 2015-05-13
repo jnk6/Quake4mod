@@ -376,6 +376,7 @@ void idInventory::RestoreInventory( idPlayer *owner, const idDict &dict ) {
 // RAVEN BEGIN
 // mekberg: removed nightmare weapon check.
 	Give( owner, dict, "weapon", dict.GetString( "weapon" ), NULL, false );
+
 // RAVEN END
 
 	// weapon mods
@@ -2799,6 +2800,9 @@ Initializes all non-persistant parts of playerState
 when called here with spectating set to true, just place yourself and init
 ============
 */
+
+//weapon counter
+
 void idPlayer::SpawnToPoint( const idVec3 &spawn_origin, const idAngles &spawn_angles ) {
 
 	//Might not need because this done in restorePersistant
@@ -9351,9 +9355,7 @@ void idPlayer::Think( void ) {
 			idStr(inventory.maxMana) +
 			idStr( " +") +
 			idStr(inventory.manaRegen) +
-			idStr( " per sec\n") +
-			idStr( "counter : ") +
-			idStr( counter)
+			idStr( " per sec\n")
 	
 		).c_str();
 	

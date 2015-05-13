@@ -180,6 +180,33 @@ public:
 							// damage
 	void					SetupDamageGroups( void );
 
+	//handles effects and buffs, weapon and spell stuff
+	typedef enum Effect: int {
+		NONE_e = 0,
+		SLOWMOVE_e = 1,
+		SLOWATTACK_e = 2,
+		STUN_e = 3,
+		SNARE_e = 4,
+		BLEED_e = 5,
+		MANASTEAL_e = 6,
+		LIFESTEAL_e = 7
+
+	}effect_t;
+
+	typedef enum Buff: int {
+		NONE_b = 19,
+		FROST_b = 20,
+		BURN_b = 21,
+		BLEED_b = 22,
+		VAMPIRE_b = 23, //lifesteal
+		XERATH_b = 24
+	
+	}buff_t;
+
+	effect_t slowed;
+	effect_t stunned;
+	effect_t bleed;
+
 	virtual	void			Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &dir, const char *damageDefName, const float damageScale, const int location );
 // RAVEN BEGIN
 // nmckenzie: a final hook in the middle of the damage function

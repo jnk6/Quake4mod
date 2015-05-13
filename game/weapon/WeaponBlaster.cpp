@@ -342,8 +342,8 @@ stateResult_t rvWeaponBlaster::State_Charge ( const stateParms_t& parms ) {
 			return SRESULT_STAGE ( CHARGE_WAIT );
 			
 		case CHARGE_WAIT:
-			// before I forget, what this means is that this will execute when the difference of time starting charge and the current
-			// game charge is less than the charge time
+			// before I forget, this handles the process while the weapon is charging and hasn't
+			// exceeded the charge time
 			if ( gameLocal.time - fireHeldTime < chargeTime ) {
 				float f;
 				f = (float)(gameLocal.time - fireHeldTime) / (float)chargeTime;
@@ -404,7 +404,10 @@ stateResult_t rvWeaponBlaster::State_Fire ( const stateParms_t& parms ) {
 		FIRE_INIT,
 		FIRE_WAIT,
 	};	
+	//examines the stage of the state
 	switch ( parms.stage ) {
+
+		//when the weapon is at FIRE_INIT stage
 		case FIRE_INIT:	
 
 			StopSound ( SND_CHANNEL_ITEM, false );
@@ -429,11 +432,23 @@ stateResult_t rvWeaponBlaster::State_Fire ( const stateParms_t& parms ) {
 
 	
 			if ( gameLocal.time - fireHeldTime > chargeTime ) {	
-				Attack ( true, 1, spread, 0, 1.0f );
-				PlayEffect ( "fx_chargedflash", barrelJointView, false );
-				PlayAnim( ANIMCHANNEL_ALL, "chargedfire", parms.blendFrames );
+				if (player->inventory.curMana > 5)
+				{
+					player->inventory.curMana -= 5;
+					Attack ( true, 1, spread, 0, 1.0f );
+					PlayEffect ( "fx_chargedflash", barrelJointView, false );
+					PlayAnim( ANIMCHANNEL_ALL, "chargedfire", parms.blendFrames );					
+				}
+				
 			} else {
-				Attack ( false, 1, spread, 0, 1.0f );
+				//was Attack ( false, 1, spread, 0, 1.0f );
+				Attack ( false, 4, spread*10, 0, 1.0f );
+
+				//temp solution
+				if (player->inventory.curMana < 100){
+					player->inventory.curMana += 1;
+				}
+
 				PlayEffect ( "fx_normalflash", barrelJointView, false );
 				PlayAnim( ANIMCHANNEL_ALL, "fire", parms.blendFrames );
 			}
