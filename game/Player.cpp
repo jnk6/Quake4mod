@@ -9842,6 +9842,7 @@ void idPlayer::Killed( idEntity *inflictor, idEntity *attacker, int damage, cons
 			{
 				/// Remove the player's armor
 				inventory.armor = 0;
+				idPlayer *player = gameLocal.GetLocalPlayer();
 
 				/// Preserve this player's weapons at the state of his death, to be restored on respawn
 				carryOverCurrentWeapon = currentWeapon;
